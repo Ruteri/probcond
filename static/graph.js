@@ -46,7 +46,8 @@ function updateGraph() {
           },
         );
       } // Add the "+" button for selecting the parent node
-      const addButton = parentNodeCell.append('button').attr('class', 'btn btn-primary btn-sm ml-2').attr('style', 'margin-left: 0 !important').style('width', '20%').text('+');
+      const addButton = parentNodeCell.append('button').attr('class', 'btn btn-primary btn-sm ml-2').attr('style', 'margin-left: 0 !important').style('width', '20%')
+        .text('+');
       addButton.on(
         'click',
         () => {
@@ -115,19 +116,19 @@ function updateGraph() {
       deleteButton.on('click', () => {
         deleteNode(node_index);
       });
-      nodeCell.append("div").style('display', 'inline').style('margin-left', '10px').text(node.value);
+      nodeCell.append('div').style('display', 'inline').style('margin-left', '10px').text(node.value);
       // Child Node column
       const childNodeCell = tableRow.append('td').style('padding', '10px').style('vertical-align', 'middle');
       if (children && children.length > 0) {
         children.forEach(
           (child, childIndex) => {
-            var childSpan = childNodeCell.append('span').style('margin-bottom', '2px');
+            const childSpan = childNodeCell.append('span').style('margin-bottom', '2px');
             // Create delete button for each child
             const deleteButton = childSpan.append('button').attr('class', 'btn btn-danger btn-sm ml-2').text('-');
             deleteButton.on('click', () => {
               deleteEdge(node_index, child);
             });
-            childSpan.append("div").style('display', 'inline').style('margin-left', '10px').text(child);
+            childSpan.append('div').style('display', 'inline').style('margin-left', '10px').text(child);
             if (childIndex < children.length - 1) {
               childNodeCell.append('br');
             }
@@ -171,7 +172,8 @@ function updateGraph() {
 
   graphContainer.append('button').attr('class', 'btn btn-primary')
     .attr('style', 'margin-top: 7px')
-    .text('Generate questionnaire').attr('onclick', 'postDag()');
+    .text('Generate questionnaire')
+    .attr('onclick', 'postDag()');
 }
 function deleteNode(nodeIndex) {
   // Remove the node from the "given" nodes list

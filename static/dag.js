@@ -1,19 +1,19 @@
-var dag = {
+let dag = {
   nodes: [],
   edges: [],
   questionnaire: {},
-  given: []
+  given: [],
 };
 
 window.dag = dag;
 
 function addNode() {
-  var nodeNameInput = document.getElementById('nodeName');
-  var nodeNegationInput = document.getElementById('nodeNegation');
+  const nodeNameInput = document.getElementById('nodeName');
+  const nodeNegationInput = document.getElementById('nodeNegation');
   if (nodeNameInput.value !== '') {
-    var node = {
+    const node = {
       value: nodeNameInput.value,
-      negation: nodeNegationInput.value
+      negation: nodeNegationInput.value,
     };
     dag.nodes.push(node);
     nodeNameInput.value = '';
@@ -22,16 +22,16 @@ function addNode() {
   updateGraph();
 }
 function addEdge() {
-  var srcNodeSelect = document.getElementById('srcNode');
-  var dstNodeSelect = document.getElementById('dstNode');
-  var srcNodeId = parseInt(srcNodeSelect.value);
-  var dstNodeId = parseInt(dstNodeSelect.value);
+  const srcNodeSelect = document.getElementById('srcNode');
+  const dstNodeSelect = document.getElementById('dstNode');
+  const srcNodeId = parseInt(srcNodeSelect.value);
+  const dstNodeId = parseInt(dstNodeSelect.value);
   if (srcNodeId !== dstNodeId) {
-    var srcNode = dag.nodes[srcNodeId].value;
-    var dstNode = dag.nodes[dstNodeId].value;
-    var edge = {
+    const srcNode = dag.nodes[srcNodeId].value;
+    const dstNode = dag.nodes[dstNodeId].value;
+    const edge = {
       src: srcNode,
-      dst: dstNode
+      dst: dstNode,
     };
     dag.edges.push(edge);
     srcNodeSelect.value = '';
@@ -40,22 +40,22 @@ function addEdge() {
   updateGraph();
 }
 function exportData() {
-  var data = JSON.stringify(dag);
-  var blob = new Blob([data], {
-    type: 'application/json'
+  const data = JSON.stringify(dag);
+  const blob = new Blob([data], {
+    type: 'application/json',
   });
-  var fileName = prompt('Enter file name:', 'dag.json');
-  var link = document.createElement('a');
+  const fileName = prompt('Enter file name:', 'dag.json');
+  const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = fileName;
   link.click();
 }
 function importData(event) {
-  var file = event.target.files[0];
-  var reader = new FileReader();
+  const file = event.target.files[0];
+  const reader = new FileReader();
   reader.onload = function (e) {
-    var contents = e.target.result;
-    var importedDAG = JSON.parse(contents);
+    const contents = e.target.result;
+    const importedDAG = JSON.parse(contents);
     // Update the existing DAG variable
     dag = importedDAG;
     // Add any necessary code to update the UI or perform other operations with the imported data
@@ -64,4 +64,3 @@ function importData(event) {
   };
   reader.readAsText(file);
 }
-

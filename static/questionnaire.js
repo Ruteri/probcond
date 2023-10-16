@@ -29,18 +29,19 @@ function displayQuestionnaire(questionnaire) {
 
       if (question.Conditions !== null) {
         question.Conditions.forEach((text) => {
-          questionListItem.append('div').text("- "+text);
+          questionListItem.append('div').text(`- ${text}`);
         });
       }
       if (question.Negations !== null) {
         question.Negations.forEach((text) => {
-          questionListItem.append('div').text("- "+text);
+          questionListItem.append('div').text(`- ${text}`);
         });
       } // Create an input field for the integer answer
-      const inputField = questionListItem.append('input').attr('type', 'number').attr('min', 0).attr('max', 100).on('change', (event) => {
-        const answer = parseInt(inputField.node().value);
-        dag.questionnaire.ProbConds[qIndex].Answer = answer;
-      });
+      const inputField = questionListItem.append('input').attr('type', 'number').attr('min', 0).attr('max', 100)
+        .on('change', (event) => {
+          const answer = parseInt(inputField.node().value);
+          dag.questionnaire.ProbConds[qIndex].Answer = answer;
+        });
       inputField.node().value = question.Answer;
     },
   );
@@ -80,9 +81,7 @@ function submitQuestionnaire(questionnaire) {
     },
   ).then((response) => response.json()).then(
     (answers) => {
-      alert(answers.map(answer => {
-        return "Probability that "+answer.InQuestion+": "+answer.Result;
-      }).join("\n"));
+      alert(answers.map((answer) => `Probability that ${answer.InQuestion}: ${answer.Result}`).join('\n'));
     },
   ).catch((error) => {
     console.error('Error:', error);
