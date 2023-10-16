@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DAG Creator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        #canvas {
+            border: 1px solid black;
+            height: 400px; /* Added height to the canvas */
+        }
+    </style>
+</head>
+<body>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script type="text/javascript" src="dag.js"></script>
+    <script type="text/javascript" src="graph.js"></script>
+    <script type="text/javascript" src="questionnaire.js"></script>
+
+    <div class="container">
+        <h1 class="mt-4"></h1>
+
+        <div class="input-group mb-3">
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="inputGroupFile02" onchange="importData(event)">
+            <label class="custom-file-label" for="inputGroupFile02">Choose file</label>
+          </div>
+          <div class="input-group-append">
+            <span class="input-group-text" onclick="exportData()" id="">Export</span>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <div class="input-group-prepend" onclick="addNode()">
+            <span class="input-group-text" id="">Add Conditional</span>
+          </div>
+          <input type="text" id="nodeName" class="form-control" placeholder="event (project succeeds)">
+          <input type="text" id="nodeNegation" class="form-control" placeholder="negation (optional) (project does not succeed)">
+        </div>
+    </div>
+    <br/>
+    <div class="container">
+        <div id="graphContainer"></div>
+    </div>
+    <br/>
+    <div class="container">
+        <div id="questionnaireContainer"></div>
+    </div>
+</body>
+</html>
