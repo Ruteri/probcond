@@ -16,7 +16,7 @@ func TestQuestionnaireSingleNode(t *testing.T) {
 
 	dag.AddNode(A)
 
-	questionnaire := GenerateQuestionnaire(dag, nil, negations)
+	questionnaire := GenerateQuestionnaire(dag, nil, negations, nil)
 
 	require.Equal(t, `P(A (~!A) |  | ) = 0`, questionnaire.Format())
 }
@@ -33,7 +33,7 @@ func TestQuestionnaireSingleEdge(t *testing.T) {
 
 	dag.AddEdge(A, B)
 
-	questionnaire := GenerateQuestionnaire(dag, nil, negations)
+	questionnaire := GenerateQuestionnaire(dag, nil, negations, nil)
 
 	require.Equal(t, `P(A (~!A) |  | ) = 0
 P(B (~!B) | A | ) = 0
@@ -52,7 +52,7 @@ func TestQuestionnaireSingleEdgeWGiven(t *testing.T) {
 
 	dag.AddEdge(A, B)
 
-	questionnaire := GenerateQuestionnaire(dag, []string{A}, negations)
+	questionnaire := GenerateQuestionnaire(dag, []string{A}, negations, nil)
 
 	require.Equal(t, `P(B (~!B) | A | ) = 0`, questionnaire.Format())
 }
@@ -85,7 +85,7 @@ func TestQuestionnaire(t *testing.T) {
 	dag.AddEdge(K, F)
 	dag.AddEdge(F, S)
 
-	questionnaire := GenerateQuestionnaire(dag, []string{W}, negations)
+	questionnaire := GenerateQuestionnaire(dag, []string{W}, negations, nil)
 	require.Equal(t, `P(c (~cf) | w | ) = 0
 P(k (~wk) | w, c | ) = 0
 P(k (~wk) | w | cf) = 0

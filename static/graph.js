@@ -140,6 +140,37 @@ function updateGraph() {
     },
   );
 
+  const experimentsSection = graphContainer.append('div').attr('class', 'section');
+  experimentsSection.append('h3').text('Experiments');
+  const experimentsTable = experimentsSection.append('table').attr('class', 'table');
+  const experimentsTableBody = experimentsTable.append('tbody');
+
+  dag.experiments.forEach((ex) => {
+    const experimentsTableRow = experimentsTableBody.append('tr');
+
+    // Node cell
+    experimentsTableRow.append('td').text(ex[0]);
+    experimentsTableRow.append('td').text(ex[1]);
+
+    // Remove button cell
+    const removeButtonCell = experimentsTableRow.append('td');
+    removeButtonCell.append('button')
+      .attr('class', 'btn btn-danger btn-sm ml-2')
+      .text('Remove')
+      .on('click', () => {
+        const index = dag.experiments.indexOf(ex);
+        if (index !== -1) {
+          dag.experiments.splice(index, 1);
+          updateGraph();
+        }
+      });
+  });
+
+  const addExperimentButton = experimentsTableBody.append('tr').append('td').append('button')
+    .attr('class', 'btn btn-primary')
+    .text('Add Experiment')
+    .on('click', addExperimentNode);
+
   // Add the new section for setting Nodes as "given"
   const givenSection = graphContainer.append('div').attr('class', 'section');
   givenSection.append('h3').text('Given Events');
@@ -205,6 +236,61 @@ function deleteEdge(nodeIndex, childNode) {
     // Update the graph
     updateGraph();
   }
+}
+
+function addExperimentNode() {
+  // Create a modal pop-up
+  const modal = d3.select('body').append('div').attr('class', 'modal').style('display', 'block')
+    .style('position', 'fixed')
+    .style('z-index', '9999')
+    .style('left', '0')
+    .style('top', '0')
+    .style('width', '100%')
+    .style('height', '100%')
+    .style('overflow', 'auto')
+    .style('background-color', 'rgba(0, 0, 0, 0.4)');
+
+  // Create the modal content
+  const modalContent = modal.append('div').attr('class', 'modal-content').style('background-color', '#fefefe').style('margin', '15% auto')
+    .style('padding', '20px')
+    .style('border', '1px solid #888')
+    .style('width', '50%');
+
+  // Add a close button to the modal
+  modalContent.append('span').attr('class', 'close').style('float', 'right').style('font-size', '28px')
+    .style('font-weight', 'bold')
+    .style('cursor', 'pointer')
+    .html('&times;')
+    .on(
+      'click',
+      () => {
+        modal.style('display', 'none');
+        modal.remove();
+      },
+    );
+
+  const experimentInput = modalContent.append('input').attr('type', 'text').attr('placeholder', 'Experiment description').attr('class', 'form-control').style('margin-bottom', '20px');
+
+  // Add a select dropdown to the modal content
+  const selectDropdown = modalContent.append('select').attr('class', 'form-control').style('margin-bottom', '20px');
+
+  // Add options to the select dropdown
+  selectDropdown.selectAll('option').data(dag.nodes).enter().append('option')
+    .attr('value', (d) => d.value)
+    .text((d) => d.value);
+
+  // Add a button to add the selected node as "given"
+  modalContent.append('button')
+    .attr('class', 'btn btn-primary')
+    .text('Add Experiment')
+    .on('click', () => {
+      const selectedNode = selectDropdown.node().value;
+      if (selectedNode) {
+        addExperiment(experimentInput.node().value, selectedNode);
+        modal.style('display', 'none');
+        modal.remove();
+      }
+    });
 }
 
 function addGivenNode() {
@@ -276,6 +362,7 @@ function postDag() {
   const data = JSON.stringify({
     nodes: dag.nodes,
     edges: dag.edges,
+    experiments: dag.experiments,
     given: dag.given,
   });
   fetch(
@@ -290,6 +377,40 @@ function postDag() {
   ).then((response) => response.json()).then(
     (questionnaire) => {
       // Display the questionnaire returned by the server
+      if (dag.questionnaire) {
+        if (questionnaire.ProbConds === null || questionnaire.ProbConds === undefined) {
+          questionnaire.ProbConds = [];
+        }
+
+        questionnaire.ProbConds.forEach((pc) => {
+          if (pc.Answer === 0) {
+            dag.questionnaire.ProbConds.forEach((cpc) => {
+              if (cpc.InQuestion === pc.InQuestion && (
+                (cpc.Conditions === pc.Conditions) || (cpc.Conditions !== null && pc.Conditions !== null && cpc.Conditions.toString() === pc.Conditions.toString())
+                ) && (
+                (cpc.Negations === pc.Negations) || (cpc.Negations !== null && pc.Negations !== null && cpc.Negations.toString() === pc.Negations.toString())
+                )) {
+                pc.Answer = cpc.Answer;
+              }
+            });
+          }
+        });
+
+        if (questionnaire.Experiments === null || questionnaire.Experiments === undefined) {
+          questionnaire.Experiments = [];
+        }
+
+        questionnaire.Experiments.forEach((ex) => {
+          if (ex.AnswerIfTrue === 0) {
+            dag.questionnaire.Experiments.forEach((cex) => {
+              if (cex.InQuestion === ex.InQuestion && cex.Hypothesis === ex.Hypothesis) {
+                ex.AnswerIfTrue = cex.AnswerIfFalse;
+                ex.AnswerIfTrue = cex.AnswerIfFalse;
+              }
+            });
+          }
+        });
+      }
       dag.questionnaire = questionnaire;
       displayQuestionnaire(questionnaire);
     },

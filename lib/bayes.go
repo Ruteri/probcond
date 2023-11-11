@@ -44,8 +44,27 @@ func CalculateNodeProb(node string, q *Questionnaire, cache *map[string]float64,
 	}
 
 	fmt.Println("calculated node", node, ret)
+
+	// Take experiment data into account (bayes rule)
+	ret = Accumulate(
+		ret,
+		Filter(q.Experiments, func(ex **Experiment) bool { return (*ex).Hypothesis == node }),
+		func(cR float64, ex **Experiment) float64 {
+			ansIfTrue := float64((*ex).AnswerIfTrue) / 100
+			ansIfFalse := float64((*ex).AnswerIfFalse) / 100
+			return (ansIfTrue * cR) / ((ansIfTrue * cR) + (ansIfFalse * (1 - cR)))
+		},
+	)
+
 	(*cache)[node] = ret
 	return ret
+}
+
+func Accumulate[Acc any, T any](a Acc, ts []T, cb func(Acc, *T) Acc) Acc {
+	for _, t := range ts {
+		a = cb(a, &t)
+	}
+	return a
 }
 
 func Filter[T any](ts []T, cb func(*T) bool) []T {

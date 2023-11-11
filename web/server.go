@@ -21,7 +21,8 @@ type DAGData struct {
 		Value    string `json:"value"`
 		Negation string `json:"negation"`
 	} `json:"nodes"`
-	Given []string `json:"given"`
+	Experiments [][2]string `json:"experiments"`
+	Given       []string    `json:"given"`
 }
 
 type QuestionnaireData struct {
@@ -68,19 +69,27 @@ func handleDAG(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dag := &lib.DAG{}
+
 	negations := make(map[string]string)
 	for _, node := range dagData.Nodes {
 		if node.Negation != "" {
 			negations[node.Value] = node.Negation
 		}
+		dag.AddNode(node.Value)
 	}
 
-	dag := &lib.DAG{}
 	for _, edge := range dagData.Edges {
 		dag.AddEdge(edge.Src, edge.Dst)
 	}
 
-	questionnaire := lib.GenerateQuestionnaire(dag, dagData.Given, negations)
+	experimentsMap := make(map[string][]string)
+	for _, ex := range dagData.Experiments {
+		experimentsMap[ex[0]] = append(experimentsMap[ex[0]], ex[1])
+	}
+
+	questionnaire := lib.GenerateQuestionnaire(dag, dagData.Given, negations, experimentsMap)
+	log.Print(questionnaire)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(questionnaire)

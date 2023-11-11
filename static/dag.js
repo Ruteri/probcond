@@ -2,6 +2,7 @@ let dag = {
   nodes: [],
   edges: [],
   questionnaire: {},
+  experiments: [],
   given: [],
 };
 
@@ -39,6 +40,10 @@ function addEdge() {
   }
   updateGraph();
 }
+function addExperiment(experiment, node) {
+  dag.experiments.push([node, experiment]);
+  updateGraph();
+}
 function exportData() {
   const data = JSON.stringify(dag);
   const blob = new Blob([data], {
@@ -58,6 +63,12 @@ function importData(event) {
     const importedDAG = JSON.parse(contents);
     // Update the existing DAG variable
     dag = importedDAG;
+    if (dag.experiments === undefined) {
+      dag.experiments = [];
+    }
+    if (dag.questionnaire.Experiments === undefined) {
+      dag.questionnaire.Experiments = [];
+    }
     // Add any necessary code to update the UI or perform other operations with the imported data
     updateGraph();
     displayQuestionnaire(dag.questionnaire);

@@ -20,24 +20,56 @@ func (probCond *ProbCond) Format() string {
 	return fmt.Sprintf("P(%s (~%s) | %s | %s) = %d", probCond.InQuestion, probCond.QNegation, strings.Join(probCond.Conditions, ", "), strings.Join(probCond.Negations, ", "), probCond.Answer)
 }
 
+type Experiment struct {
+	InQuestion         string
+	Hypothesis         string
+	HypothesisNegation string
+	AnswerIfTrue       int // p (e|q)
+	AnswerIfFalse      int // p (e|~q)
+}
+
+func (e *Experiment) Format() string {
+	return fmt.Sprintf("P(%s | %s) = %d\nP(%s | ~%s) = %d", e.InQuestion, e.Hypothesis, e.AnswerIfTrue, e.InQuestion, e.HypothesisNegation, e.AnswerIfFalse)
+}
+
 type Questionnaire struct {
-	ProbConds []*ProbCond
+	ProbConds   []*ProbCond
+	Experiments []*Experiment
 }
 
 func (q *Questionnaire) Format() string {
-	return strings.Join(Transform(q.ProbConds, func(pc *ProbCond) string { return pc.Format() }), "\n")
+	return strings.Join(
+		append(
+			Transform(q.ProbConds, func(pc *ProbCond) string { return pc.Format() }),
+			Transform(q.Experiments, (*Experiment).Format)...,
+		),
+		"\n",
+	)
 }
 
 func (q *Questionnaire) Print() {
 	fmt.Printf(q.Format())
 }
 
-func GenerateQuestionnaire(dag *DAG, given []string, negations map[string]string) *Questionnaire {
+func GenerateQuestionnaire(dag *DAG, given []string, negations map[string]string, experiments map[string][]string) *Questionnaire {
 	q := &Questionnaire{}
 
 	dag.Traverse(func(node *Node) bool {
 		nodeParents := dag.NodeParents(node.Value)
 		q.ProbConds = append(q.ProbConds, MakeProbConds(dag, node, []*ProbCond{}, nodeParents, given, negations)...)
+		if relevantExperiments, found := experiments[node.Value]; found {
+			q.Experiments = append(q.Experiments, Transform(relevantExperiments, func(experiment string) *Experiment {
+				hypothesisNegation, found := negations[node.Value]
+				if !found {
+					hypothesisNegation = "not " + node.Value
+				}
+				return &Experiment{
+					InQuestion:         experiment,
+					Hypothesis:         node.Value,
+					HypothesisNegation: hypothesisNegation,
+				}
+			})...)
+		}
 		return true
 	})
 
@@ -123,6 +155,26 @@ func (q *Questionnaire) GatherAnswers() {
 			panic(err.Error())
 		}
 		pc.Answer = v
+	}
+
+	for _, ex := range q.Experiments {
+		v, err := GetAnswer(&ProbCond{
+			InQuestion: ex.InQuestion,
+			Conditions: []string{ex.Hypothesis},
+		})
+		if err != nil {
+			panic(err.Error())
+		}
+		ex.AnswerIfTrue = v
+
+		v, err = GetAnswer(&ProbCond{
+			InQuestion: ex.InQuestion,
+			Negations:  []string{ex.HypothesisNegation},
+		})
+		if err != nil {
+			panic(err.Error())
+		}
+		ex.AnswerIfFalse = v
 	}
 }
 

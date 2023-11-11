@@ -17,34 +17,54 @@ function displayQuestionnaire(questionnaire) {
   graphContainer.append('h2').text('Questionnaire');
   // Create a form for the questions
   const questionnaireForm = graphContainer.append('ul').attr('class', 'list-group').attr('class', 'list-group-flush');
-  questionnaire.ProbConds.forEach(
-    (question, qIndex) => {
-      // Create a list item for the question
-      const questionListItem = questionnaireForm.append('li').attr('class', 'list-group-item');
-      if (question.Conditions !== null || question.Negations !== null) {
-        questionListItem.append('div').text(`What is the probability that ${question.InQuestion} given:`);
-      } else {
-        questionListItem.append('div').text(`What is the probability that ${question.InQuestion}?`);
-      }
+  questionnaire.ProbConds.forEach((question, qIndex) => {
+    // Create a list item for the question
+    const questionListItem = questionnaireForm.append('li').attr('class', 'list-group-item');
+    if (question.Conditions !== null || question.Negations !== null) {
+      questionListItem.append('div').text(`What is the probability that ${question.InQuestion} given:`);
+    } else {
+      questionListItem.append('div').text(`What is the probability that ${question.InQuestion}?`);
+    }
 
-      if (question.Conditions !== null) {
-        question.Conditions.forEach((text) => {
-          questionListItem.append('div').text(`- ${text}`);
-        });
-      }
-      if (question.Negations !== null) {
-        question.Negations.forEach((text) => {
-          questionListItem.append('div').text(`- ${text}`);
-        });
-      } // Create an input field for the integer answer
-      const inputField = questionListItem.append('input').attr('type', 'number').attr('min', 0).attr('max', 100)
-        .on('change', (event) => {
-          const answer = parseInt(inputField.node().value);
-          dag.questionnaire.ProbConds[qIndex].Answer = answer;
-        });
-      inputField.node().value = question.Answer;
-    },
-  );
+    if (question.Conditions !== null) {
+      question.Conditions.forEach((text) => {
+        questionListItem.append('div').text(`- ${text}`);
+      });
+    }
+    if (question.Negations !== null) {
+      question.Negations.forEach((text) => {
+        questionListItem.append('div').text(`- ${text}`);
+      });
+    } // Create an input field for the integer answer
+    const inputField = questionListItem.append('input').attr('type', 'number').attr('min', 0).attr('max', 100)
+      .on('change', (event) => {
+        const answer = parseInt(inputField.node().value);
+        dag.questionnaire.ProbConds[qIndex].Answer = answer;
+      });
+    inputField.node().value = question.Answer;
+  });
+  questionnaire.Experiments.forEach((ex, exIndex) => {
+    // Create a list item for the question
+    const questionListItemT = questionnaireForm.append('li').attr('class', 'list-group-item');
+    questionListItemT.append('div').text(`What is the probability that ${ex.InQuestion} given ${ex.Hypothesis}`);
+
+    const inputFieldT = questionListItemT.append('input').attr('type', 'number').attr('min', 0).attr('max', 100)
+      .on('change', (event) => {
+        const answer = parseInt(inputFieldT.node().value);
+        dag.questionnaire.Experiments[exIndex].AnswerIfTrue = answer;
+      });
+    inputFieldT.node().value = ex.AnswerIfTrue;
+
+    const questionListItemF = questionnaireForm.append('li').attr('class', 'list-group-item');
+    questionListItemF.append('div').text(`What is the probability that ${ex.InQuestion} given ${ex.HypothesisNegation}`);
+
+    const inputFieldF = questionListItemF.append('input').attr('type', 'number').attr('min', 0).attr('max', 100)
+      .on('change', (event) => {
+        const answer = parseInt(inputFieldF.node().value);
+        dag.questionnaire.Experiments[exIndex].AnswerIfFalse = answer;
+      });
+    inputFieldF.node().value = ex.AnswerIfFalse;
+  });
   // Add a submit button to the form
   questionnaireForm.append('br');
   questionnaireForm.append('div').append('button').attr('class', 'btn btn-primary').text('Calculate')
